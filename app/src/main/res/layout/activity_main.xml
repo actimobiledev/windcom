@@ -61,6 +61,18 @@
                     android:textColor="@color/primary_text"
                     android:textSize="@dimen/text_size_medium"
                     android:textStyle="bold"/>
+
+
+                <ImageView
+                    android:id="@+id/ivSave"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:padding="@dimen/activity_margin"
+                    android:src="@drawable/ic_save"
+                    android:visibility="visible"/>
             </RelativeLayout>
         </android.support.v7.widget.Toolbar>
         <View
@@ -72,12 +84,28 @@
             android:visibility="visible"/>
     </android.support.design.widget.AppBarLayout>
 
+
     <RelativeLayout
         android:id="@+id/rlMain"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="visible"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/llMain"></LinearLayout>
+
+        </ScrollView>
+
+
 
     </RelativeLayout>
 
