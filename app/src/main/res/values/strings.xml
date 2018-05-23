@@ -57,4 +57,10 @@
     <string name="dialog_action_settings">SETTINGS</string>
     <string name="dialog_action_close">CLOSE</string>
     <string name="dialog_action_show_all">SHOW ALL</string>
+
+
+
+    <string name="please_enter_password">Please enter password</string>
+    <string name="password_not_matched">Password did not matched</string>
+
 </resources>

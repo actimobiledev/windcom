@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 
 public class AppDetailsPref {
-    public static String EMPLOYEE_NAME = "employee_name";
+    public static String LOGIN_KEY = "login_key";
+    public static String RESPONDANT_NAME = "respondant_name";
+    public static String RESPONDANT_EMAIL = "respondant_email";
 
     
     

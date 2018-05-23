@@ -7,6 +7,9 @@ public class AppConfigURL {
     private static String BASE_URL = "https://project-windcom-cammy92.c9users.io/api/" + version + "/";
 
     public static String GET_SURVEY_DETAIL = BASE_URL + "survey/1";
+    public static String LOGIN = BASE_URL + "respondant/login";
+    public static String FORGOT_PASSWORD = BASE_URL + "respondant/forgot-password";
+    public static String CHANGE_PASSWORD = BASE_URL + "respondant/change-password";
 
 
 

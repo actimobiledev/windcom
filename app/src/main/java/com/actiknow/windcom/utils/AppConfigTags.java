@@ -17,10 +17,11 @@ public class AppConfigTags {
     public static final String MESSAGE = "message";
     public static final String DATABASE_LOG = "DATABASE LOG";
     public static final String HEADER_API_KEY = "api-key";
-    public static final String HEADER_EMPLOYEE_LOGIN_KEY = "employee-login-key";
+    public static final String LOGIN_KEY = "login-key";
     
     public static final String MESSAGE_TEXT = "Message Text";
-    
+    public static final String RESPONDANT_LOGIN_KEY= "respondant_login_key";
+
     
     public static final String OTP = "otp";
     public static final String MATCH = "match";
@@ -38,6 +39,14 @@ public class AppConfigTags {
     public static final String QUESTION_OPTION = "question_options";
     public static final String QUESTION_TYPE = "question_type";
     public static final String QUESTION_STYLE = "question_style";
+
+
+    public static final String EMAIL = "username";
+    public static final String PASSWORD = "password";
+    public static final String RESPONDANT_NAME = "respondant_name";
+    public static final String RESPONDANT_EMAIL = "respondant_email";
+    public static final String OLD_PASSWORD = "old_password";
+    public static final String NEW_PASSWORD = "new_password";
 
 
 
