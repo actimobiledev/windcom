@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvQuestionType5"
+        android:text="Question 5"
+        android:paddingLeft="@dimen/activity_margin"
+        android:paddingRight="@dimen/activity_margin"
+        android:paddingTop="@dimen/activity_margin"
+        android:textColor="@color/primary_text"
+        android:textSize="@dimen/text_size_medium"
+        android:textStyle="bold"/>
+
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvUploadImage"
+        android:text="Upload Image"
+        android:paddingLeft="@dimen/activity_margin"
+        android:paddingRight="@dimen/activity_margin"
+        android:paddingTop="@dimen/activity_margin"
+        android:textColor="@color/primary_text"
+        android:textSize="@dimen/text_size_medium"
+        android:textStyle="bold"
+        android:gravity="right"
+        android:layout_toRightOf="@+id/tvQuestionType5"
+        android:layout_alignParentEnd="true"/>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:id="@+id/ivImageUpload"
+        android:layout_below="@id/tvQuestionType5"
+        android:src="@drawable/blank_image"
+
+        android:layout_margin="@dimen/activity_margin"
+        android:scaleType="centerCrop"></ImageView>
+
+</RelativeLayout>

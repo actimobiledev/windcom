@@ -28,6 +28,18 @@ public class AppConfigTags {
     public static final String STATUS = "status";
 
 
+    public static final String SURVEY_ID = "survey_id";
+    public static final String SURVEY_UNIQUE_ID = "survey_unique_id";
+    public static final String SURVEY_TITLE = "survey_title";
+    public static final String QUESTIONS = "questions";
+    public static final String QUESTIONNAIRE_ID = "questionnaire_id";
+    public static final String QUESTION_ID = "question_id";
+    public static final String QUESTION_TEXT = "question_text";
+    public static final String QUESTION_OPTION = "question_options";
+    public static final String QUESTION_TYPE = "question_type";
+    public static final String QUESTION_STYLE = "question_style";
+
+
 
 
     
