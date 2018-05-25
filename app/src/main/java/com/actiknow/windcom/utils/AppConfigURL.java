@@ -13,6 +13,10 @@ public class AppConfigURL {
 
 
 
+    public static String UPLOAD_URL = BASE_URL + "";
+
+
+
 
 }
 

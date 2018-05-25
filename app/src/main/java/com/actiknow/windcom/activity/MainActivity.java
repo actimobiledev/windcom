@@ -1,6 +1,7 @@
 package com.actiknow.windcom.activity;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -35,11 +36,13 @@ import android.widget.Toast;
 
 import com.actiknow.windcom.Manifest;
 import com.actiknow.windcom.R;
+import com.actiknow.windcom.model.CheckBoxOptionText;
 import com.actiknow.windcom.model.Questions;
 import com.actiknow.windcom.utils.AppConfigTags;
 import com.actiknow.windcom.utils.AppConfigURL;
 import com.actiknow.windcom.utils.AppDetailsPref;
 import com.actiknow.windcom.utils.Constants;
+import com.actiknow.windcom.utils.FilePath;
 import com.actiknow.windcom.utils.NetworkConnection;
 import com.actiknow.windcom.utils.SetTypeFace;
 import com.actiknow.windcom.utils.Utils;
@@ -67,13 +70,21 @@ import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 import com.mikepenz.materialdrawer.util.DrawerUIUtils;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -102,6 +113,8 @@ public class MainActivity extends AppCompatActivity {
     TextView tvQuestionTypeRadio;
     RadioGroup rgMain;
 
+    String rb2;
+
     TextView tvQuestionTypeCheck;
     LinearLayout llQuestionOption;
 
@@ -109,12 +122,18 @@ public class MainActivity extends AppCompatActivity {
     ImageView ivImage;
 
     TextView tvQuestionTypeUploadImage;
-    TextView tvUploadImage;
-    ImageView ivImageUpload;
+    TextView tvSelectedFile;
+    TextView tvFileSelectedName;
 
 
-    List<String> checkItemList = new ArrayList<>();
     List<Questions> questionsList = new ArrayList<>();
+    List<CheckBoxOptionText> checkBoxOptionTexts = new ArrayList<>();
+    private static final int STORAGE_PERMISSION_CODE = 123;
+    private static final int PICK_FILE_REQUEST = 1;
+    String FileName = "";
+    private int PICK_PDF_REQUEST = 1;
+    private String selectedFilePath;
+    private static final String TAG = MainActivity.class.getSimpleName ();
 
 
     @Override
@@ -147,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
 
         LayoutInflater layoutInflater = (LayoutInflater) getBaseContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         for (int type = 0; type < questionsList.size(); type++) {
-            Questions questions = questionsList.get(type);
+            final Questions questions = questionsList.get(type);
             int questionType = questions.getQuestion_type();
             switch (questionType) {
 
@@ -163,6 +182,8 @@ public class MainActivity extends AppCompatActivity {
                     etQuestionType1 = (EditText) addView2.findViewById(R.id.etQuestionType1);
                     tvQuestionTypeInput = (TextView) addView2.findViewById(R.id.tvQuestionType1);
                     tvQuestionTypeInput.setText(questions.getQuestion_text());
+
+
                     llMain.addView(addView2);
                     break;
 
@@ -182,10 +203,11 @@ public class MainActivity extends AppCompatActivity {
 
                         rgMain.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
                             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                                // checkedId is the RadioButton selected
-                                RadioButton rb = (RadioButton) findViewById(checkedId);
-                                Log.e("You Selected ", rb.getText().toString());
-                                //Toast.makeText(getApplicationContext(), rb.getText(), Toast.LENGTH_SHORT).show();
+                                RadioButton rb = (RadioButton) group.findViewById(checkedId);
+                                rb2 = rb.getText().toString();
+                                // Log.d("You Selected ","888" +rb2);
+                                //  Log.d("question_id ","888" +questions.getQuestion_id());
+
                             }
                         });
                     }
@@ -198,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
                     tvQuestionTypeCheck = (TextView) addView4.findViewById(R.id.tvQuestionType3);
                     llQuestionOption = (LinearLayout) addView4.findViewById(R.id.llQuestionOption);
                     tvQuestionTypeCheck.setText(questions.getQuestion_text());
-                    List<String> checkBoxOptionList = Arrays.asList(questions.getQuestion_options().replaceAll("\\s", "").split(";"));
+                    final List<String> checkBoxOptionList = Arrays.asList(questions.getQuestion_options().replaceAll("\\s", "").split(";"));
 
                     for (int i = 0; i < checkBoxOptionList.size(); i++) {
                         final CheckBox cbOption = new CheckBox(this);
@@ -206,22 +228,27 @@ public class MainActivity extends AppCompatActivity {
                         cbOption.setText(checkBoxOptionList.get(i));
                         llQuestionOption.addView(cbOption);
 
+                        final int finalI = i;
+
+
                         cbOption.setOnClickListener(new View.OnClickListener() {
                             public void onClick(View arg0) {
                                 if (cbOption.isChecked()) {
                                     cbOption.setChecked(true);
-                                    checkItemList.add(cbOption.getText().toString());
-                                    Log.d("add", checkItemList.toString());
+                                    checkBoxOptionTexts.add(finalI, new CheckBoxOptionText(questions.getQuestion_id(), cbOption.getText().toString()));
+
+                                    // Log.d("add", checkBoxOptionTexts.get(finalI).getText()+checkBoxOptionTexts.get(finalI).getCb_question_id());
                                 } else {
                                     cbOption.setChecked(false);
-                                    checkItemList.remove(cbOption.getText().toString());
-                                    Log.d("remove", checkItemList.toString());
+                                    checkBoxOptionTexts.remove(finalI);
+
                                 }
+
+
                             }
                         });
                     }
                     llMain.addView(addView4);
-
                     break;
 
 
@@ -236,13 +263,16 @@ public class MainActivity extends AppCompatActivity {
                 case 6:
                     final View addView6 = layoutInflater.inflate(R.layout.question_type_upload_image, null);
                     tvQuestionTypeUploadImage = (TextView) addView6.findViewById(R.id.tvQuestionType5);
-                    tvUploadImage = (TextView) addView6.findViewById(R.id.tvUploadImage);
-                    ivImageUpload = (ImageView) addView6.findViewById(R.id.ivImageUpload);
+                    tvSelectedFile = (TextView) addView6.findViewById(R.id.tvSelectedFile);
+                    tvFileSelectedName = (TextView) addView6.findViewById(R.id.tvFileSelectedName);
+
                     tvQuestionTypeUploadImage.setText(questions.getQuestion_text());
-                    tvUploadImage.setOnClickListener(new View.OnClickListener() {
+                    tvSelectedFile.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            selectImage();
+                            //selectImage();
+
+                            showFileChooser ();
                         }
                     });
                     llMain.addView(addView6);
@@ -267,6 +297,70 @@ public class MainActivity extends AppCompatActivity {
         ivSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+                int count = llMain.getChildCount();
+                View v = null;
+                for (int j = 0; j < count; j++) {
+                    final Questions questions = questionsList.get(j);
+                    v = llMain.getChildAt(j);
+                    switch (questions.getQuestion_type()) {
+
+                        case 1:
+                            tvQuestionTypeQuestionOnly = (TextView) v.findViewById(R.id.tvQuestionTypeQuestionOnly);
+                            break;
+
+                        case 2:
+                            etQuestionType1 = (EditText) v.findViewById(R.id.etQuestionType1);
+                            tvQuestionTypeInput = (TextView) v.findViewById(R.id.tvQuestionType1);
+                            Log.d("question_id", "" + questions.getQuestion_id());
+                            Log.d("cbText", etQuestionType1.getText().toString());
+
+                            break;
+
+                        case 3:
+                            Log.d("question_id", "" + questions.getQuestion_id());
+                            Log.d("You Selected ", rb2);
+
+                            break;
+
+
+                        case 4:
+                            String cbText = "";
+                            for (int i = 0; i < checkBoxOptionTexts.size(); i++) {
+                                if (questions.getQuestion_id() == checkBoxOptionTexts.get(i).getCb_question_id()) {
+                                    if (cbText.length() < 2) {
+                                        cbText = checkBoxOptionTexts.get(i).getText();
+                                    } else {
+                                        cbText = cbText + "," + checkBoxOptionTexts.get(i).getText();
+                                    }
+                                }
+                            }
+                            Log.d("question_id", "" + questions.getQuestion_id());
+                            Log.d("cbText", cbText);
+
+
+                            break;
+
+
+                        case 5:
+
+                            tvQuestionTypeImage = (TextView) v.findViewById(R.id.tvQuestionType4);
+                            ivImage = (ImageView) v.findViewById(R.id.ivImage);
+                            //  tvQuestionTypeImage.setText(questions.getQuestion_text());
+
+                            break;
+
+                        case 6:
+
+                            tvQuestionTypeUploadImage = (TextView) v.findViewById(R.id.tvQuestionType5);
+                            tvFileSelectedName = (TextView) v.findViewById(R.id.tvFileSelectedName);
+                            tvSelectedFile = (TextView) v.findViewById(R.id.tvSelectedFile);
+
+
+                            break;
+                    }
+                }
+
 
             }
         });
@@ -489,7 +583,7 @@ public class MainActivity extends AppCompatActivity {
         builder.show();
     }
 
-    @Override
+   /* @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
@@ -548,6 +642,187 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+*/
+
+
+    private void showFileChooser () {
+        Intent intent = new Intent ();
+        //sets the select file to all types of files
+        intent.setType ("*/*");
+        //allows to select data and return it
+        intent.setAction (Intent.ACTION_GET_CONTENT);
+        //starts new activity to select file and return data
+        try {
+            startActivityForResult (Intent.createChooser (intent, "Select a File to Upload"), PICK_PDF_REQUEST);
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText (MainActivity.this, "Please install a File Manager.", Toast.LENGTH_SHORT).show ();
+        }
+
+    }
+
+    @Override
+    protected void onActivityResult (int requestCode, int resultCode, Intent data) {
+        super.onActivityResult (requestCode, resultCode, data);
+
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == PICK_FILE_REQUEST) {
+                if (data == null) {
+                    //no data present
+                    return;
+                }
+                Uri selectedFileUri = data.getData ();
+                selectedFilePath = FilePath.getPath (this, selectedFileUri);
+                Log.i (TAG, "Selected File Path:" + selectedFilePath);
+
+                if (selectedFilePath != null && ! selectedFilePath.equals ("")) {
+                    String[] parts = selectedFilePath.split ("/");
+                    final String fileName = parts[parts.length - 1];
+                    tvFileSelectedName.setText (fileName);
+
+                    tvFileSelectedName.setVisibility (View.VISIBLE);
+                } else {
+                    tvFileSelectedName.setVisibility (View.GONE);
+                    Toast.makeText (this, "Cannot upload file to server", Toast.LENGTH_SHORT).show ();
+                }
+            }
+        }
+    }
+
+
+    public int uploadFile (final String selectedFilePath) {
+
+        int serverResponseCode = 0;
+
+        HttpURLConnection connection;
+        DataOutputStream dataOutputStream;
+        String lineEnd = "\r\n";
+        String twoHyphens = "--";
+        String boundary = "*****";
+
+
+        int bytesRead, bytesAvailable, bufferSize;
+        byte[] buffer;
+        int maxBufferSize = 1 * 1024 * 1024;
+        File selectedFile = new File (selectedFilePath);
+
+
+        String[] parts = selectedFilePath.split ("/");
+        final String fileName = parts[parts.length - 1];
+
+        if (! selectedFile.isFile ()) {
+            progressDialog.dismiss ();
+
+            runOnUiThread (new Runnable () {
+                @Override
+                public void run () {
+                    tvFileSelectedName.setText ("Source File Doesn't Exist: " + selectedFilePath);
+                }
+            });
+            return 0;
+        } else {
+            try {
+                FileInputStream fileInputStream = new FileInputStream (selectedFile);
+                URL url = new URL (AppConfigURL.UPLOAD_URL);
+                connection = (HttpURLConnection) url.openConnection ();
+                connection.setDoInput (true);//Allow Inputs
+                connection.setDoOutput (true);//Allow Outputs
+                connection.setUseCaches (false);//Don't use a cached Copy
+                connection.setRequestMethod ("POST");
+                connection.setRequestProperty ("Connection", "Keep-Alive");
+                connection.setRequestProperty ("ENCTYPE", "multipart/form-data");
+                connection.setRequestProperty ("Content-Type", "multipart/form-data;boundary=" + boundary);
+                connection.setRequestProperty ("uploaded_file", selectedFilePath);
+                connection.setRequestProperty ("User-Agent", "Mozilla/5.0 ( compatible ) ");
+                connection.setRequestProperty ("Accept", "*/*");
+                //creating new dataoutputstream
+                dataOutputStream = new DataOutputStream (connection.getOutputStream ());
+
+                //writing bytes to data outputstream
+                dataOutputStream.writeBytes (twoHyphens + boundary + lineEnd);
+                dataOutputStream.writeBytes ("Content-Disposition: form-data; name=\"uploaded_file\";filename=\""
+                        + selectedFilePath + "\"" + lineEnd);
+
+                dataOutputStream.writeBytes (lineEnd);
+
+                //returns no. of bytes present in fileInputStream
+                bytesAvailable = fileInputStream.available ();
+                //selecting the buffer size as minimum of available bytes or 1 MB
+                bufferSize = Math.min (bytesAvailable, maxBufferSize);
+                //setting the buffer as byte array of size of bufferSize
+                buffer = new byte[bufferSize];
+
+                //reads bytes from FileInputStream(from 0th index of buffer to buffersize)
+                bytesRead = fileInputStream.read (buffer, 0, bufferSize);
+
+                //loop repeats till bytesRead = -1, i.e., no bytes are left to read
+                while (bytesRead > 0) {
+                    //write the bytes read from inputstream
+                    dataOutputStream.write (buffer, 0, bufferSize);
+                    bytesAvailable = fileInputStream.available ();
+                    bufferSize = Math.min (bytesAvailable, maxBufferSize);
+                    bytesRead = fileInputStream.read (buffer, 0, bufferSize);
+                }
+
+                dataOutputStream.writeBytes (lineEnd);
+                dataOutputStream.writeBytes (twoHyphens + boundary + twoHyphens + lineEnd);
+
+                serverResponseCode = connection.getResponseCode ();
+                String serverResponseMessage = connection.getResponseMessage ();
+
+
+                BufferedReader br = new BufferedReader (new InputStreamReader((connection.getInputStream ())));
+                StringBuilder sb = new StringBuilder ();
+                String output;
+                while ((output = br.readLine ()) != null) {
+                    sb.append (output);
+                }
+
+                try {
+                    JSONObject jsonObject = new JSONObject (sb.toString ());
+                    FileName = jsonObject.getString ("file_name");
+                    Log.i ("RenameFile", jsonObject.getString ("file_name"));
+                } catch (JSONException e) {
+                    e.printStackTrace ();
+                }
+
+                Log.i (TAG, "Server Response is: " + sb.toString () + serverResponseMessage + ": " + serverResponseCode);
+                if (serverResponseCode == 200) {
+                    runOnUiThread (new Runnable () {
+                        @Override
+                        public void run () {
+                          //  uploadProfileDetailsToServer (etName.getText ().toString ().trim (), etEmail.getText ().toString ().trim (),
+                             //       etMobile.getText ().toString ().trim (), String.valueOf (jobId), FileName, etSkill.getText ().toString (), etExperience.getText ().toString ());
+
+                            tvFileSelectedName.setText (fileName);
+                        }
+                    });
+                } else {
+                    progressDialog.dismiss ();
+                }
+
+                //closing the input and output streams
+                fileInputStream.close ();
+                dataOutputStream.flush ();
+                dataOutputStream.close ();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace ();
+//                Toast.makeText (UploadResumeActivity.this, "File Not Found", Toast.LENGTH_SHORT).show ();
+                progressDialog.dismiss ();
+            } catch (MalformedURLException e) {
+                e.printStackTrace ();
+//                Toast.makeText (UploadResumeActivity.this, "URL error!", Toast.LENGTH_SHORT).show ();
+                progressDialog.dismiss ();
+            } catch (IOException e) {
+                e.printStackTrace ();
+//                Toast.makeText (UploadResumeActivity.this, "Cannot Read/Write File!", Toast.LENGTH_SHORT).show ();
+                progressDialog.dismiss ();
+            }
+            return serverResponseCode;
+        }
+    }
+
+
+
 
 
     private void showLogOutDialog() {
