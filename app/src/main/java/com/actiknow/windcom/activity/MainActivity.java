@@ -112,15 +112,11 @@ public class MainActivity extends AppCompatActivity {
     ProgressDialog progressDialog;
     TextView tvQuestionTypeRadio;
     RadioGroup rgMain;
-
     String rb2;
-
     TextView tvQuestionTypeCheck;
     LinearLayout llQuestionOption;
-
     TextView tvQuestionTypeImage;
     ImageView ivImage;
-
     TextView tvQuestionTypeUploadImage;
     TextView tvSelectedFile;
     TextView tvFileSelectedName;
@@ -135,7 +131,6 @@ public class MainActivity extends AppCompatActivity {
     private String selectedFilePath;
     private static final String TAG = MainActivity.class.getSimpleName ();
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -147,8 +142,7 @@ public class MainActivity extends AppCompatActivity {
         initDrawer();
         getQuestionList();
         checkPermissions();
-
-    }
+        }
 
     private void isLogin() {
         if (appDetailsPref.getStringPref(MainActivity.this, AppDetailsPref.LOGIN_KEY).length() == 0) {
@@ -158,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
             overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
         }
     }
-
 
     private void createDynamicallyView() {
         // Log.e("size","fsdfsdf"+questionsList.size());
@@ -182,8 +175,6 @@ public class MainActivity extends AppCompatActivity {
                     etQuestionType1 = (EditText) addView2.findViewById(R.id.etQuestionType1);
                     tvQuestionTypeInput = (TextView) addView2.findViewById(R.id.tvQuestionType1);
                     tvQuestionTypeInput.setText(questions.getQuestion_text());
-
-
                     llMain.addView(addView2);
                     break;
 
@@ -343,7 +334,6 @@ public class MainActivity extends AppCompatActivity {
 
 
                         case 5:
-
                             tvQuestionTypeImage = (TextView) v.findViewById(R.id.tvQuestionType4);
                             ivImage = (ImageView) v.findViewById(R.id.ivImage);
                             //  tvQuestionTypeImage.setText(questions.getQuestion_text());
